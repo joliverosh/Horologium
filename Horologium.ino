@@ -1,45 +1,19 @@
-#if defined(ARDUINO_ARCH_ESP8266)
 #include <ESP8266WiFi.h>
-// Module connection pins (Digital Pins)
-//#define pinClk 0 //D3 D6 GPIO0
-//#define pinDIO 2 //D4 D7 GPIO2
-#elif defined(ARDUINO_ARCH_ESP32)
-#include <WiFi.h>
-// Module connection pins (Digital Pins)
-//#define pinClk 15
-//#define pinDIO 23
-#endif
-
 #include <WiFiManager.h> // --> https://github.com/tzapu/WiFiManager
 
 #include <time.h>
 const char* ntpServer = "pool.ntp.org";
 char* TimeZ = "COT+5"; // Time zone "COT+5" http://famschmid.net/timezones.html
 
-#include <TM1637Display.h>
-int pinClk = 0;
-int pinDIO = 2;
+#include <TM1637Display.h> // Use the library included here
+int pinClk = 0; // CLK signal in pin 0
+int pinDIO = 2; // DIO signal in pin 2
 TM1637Display display(pinClk, pinDIO);
 const uint8_t colonMask = 0b01000000;
-
-
-//#define ssid       "Jose"
-//#define password    "oliveros1234"
-
-
 
 void setup() {
   // Set the display brightness 0-7
   display.setBrightness(0);
-/*
-  WiFi.begin(ssid, password);
-  while (WiFi.status() != WL_CONNECTED) {
-    // Selectively set different digits
-    display.showNumberDecEx(0, colonMask, true, 2, 0);
-    display.showNumberDec(0, true, 2, 2);
-    delay(500);
-  }
-*/
 
   //WiFiManager
   //Local intialization. Once its business is done, there is no need to keep it around
@@ -52,6 +26,8 @@ void setup() {
   wm.setClass("invert");
   wm.setConnectTimeout(180);
   bool res;
+  
+  // when the ESP module starts search for "Horologium" SSID network
   res = wm.autoConnect("Horologium");
 
   if (!res) {
@@ -74,11 +50,10 @@ void setup() {
 
 void loop() {
   time_t now = time(nullptr);
- // String time = String(ctime(&now));
   struct tm * timeinfo;
   timeinfo = localtime(&now);
 
-  //Los dos puntos entre las horas y los minutos titilando
+  //The blinking colon between hours amd minutes every even seconds 
   if ((timeinfo->tm_sec) % 2) {
     display.showNumberDecEx((timeinfo->tm_hour), colonMask, true, 2, 0);
   }
